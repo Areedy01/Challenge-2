@@ -6,21 +6,35 @@ using UnityEngine.UI;
 public class PlayerScript : MonoBehaviour
 {
     private Rigidbody2D rd2d;
-
     public float speed;
 
     public Text score;
+    public Text lives;
     public GameObject winText;
+    public GameObject loseText;
 
+    private bool gameOver;
     private int scoreValue = 0;
+    private int livesValue = 3;
+
+    public AudioClip background;
+    public AudioClip winning;
+    public AudioSource musicSource;
 
     // Start is called before the first frame update
     void Start()
     {
         rd2d = GetComponent<Rigidbody2D>();
         score.text = scoreValue.ToString();
+        lives.text = livesValue.ToString();
 
+        musicSource.clip = background;
+        musicSource.Play();
+        musicSource.loop = true;
+
+        gameOver = false;
         winText.SetActive(false);
+        loseText.SetActive(false);
     } 
     
 
@@ -30,6 +44,23 @@ public class PlayerScript : MonoBehaviour
         float hozMovement = Input.GetAxis("Horizontal");
         float vertMovement = Input.GetAxis("Vertical");
         rd2d.AddForce(new Vector2(hozMovement * speed, vertMovement * speed));
+
+        if (scoreValue >= 8 && gameOver == false)
+        {
+            winText.SetActive(true);
+            gameOver = true;
+
+            musicSource.loop = false;
+            musicSource.Stop();
+            musicSource.clip = winning;
+            musicSource.Play();
+
+        } 
+        else if (livesValue == 0)
+        {
+            loseText.SetActive(true);
+            speed = 0;
+        }
 
         if (Input.GetKey("escape"))
             {
@@ -47,9 +78,16 @@ public class PlayerScript : MonoBehaviour
             Destroy(collision.collider.gameObject);
         }
 
-        if (scoreValue >= 4)
+        if (collision.collider.tag == "Enemy")
         {
-            winText.SetActive(true);
+            livesValue -= 1;
+            lives.text = livesValue.ToString();
+            Destroy(collision.collider.gameObject);
+        }
+
+        if (scoreValue == 4)
+        {
+            transform.position = new Vector2(35.0f, 2.0f);
         }
 
     }
